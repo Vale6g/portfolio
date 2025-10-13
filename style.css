@@ -1935,15 +1935,13 @@ h1, h2, h3, h4, h5, h6, p, span, a, li, td, th {
 }
 
 .cursor-hover {
-  transform: scale(1.5) !important;
-  background-color: #666 !important;
-  border-color: #666 !important;
+    transform: scale(1.5);
+    background: #fff;
 }
 
 .cursor-follower-hover {
-  transform: scale(1.2) !important;
-  background-color: rgba(102, 102, 102, 0.3) !important;
-  border-color: rgba(102, 102, 102, 0.5) !important;
+    transform: scale(0.8);
+    border-color: #fff;
 }
 
 /* Transizioni smooth per gli effetti hover */
