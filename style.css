@@ -4082,3 +4082,24 @@ button:focus-visible {
         display: none;
     }
 }
+/* Nascondi cursore personalizzato su dispositivi touch/mobile */
+@media (hover: none) and (pointer: coarse) {
+  #cursor,
+  #cursorFollower {
+    display: none !important;
+  }
+  body {
+    cursor: auto !important;
+  }
+}
+
+/* Fallback per width piccole */
+@media (max-width: 768px) {
+  #cursor,
+  #cursorFollower {
+    display: none !important;
+  }
+  body {
+    cursor: auto !important;
+  }
+}
