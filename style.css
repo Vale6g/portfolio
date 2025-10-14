@@ -4156,3 +4156,49 @@ button:focus-visible {
     line-height: 1.4;
   }
 }
+/* Frecce verticali nel modal del playground - MOBILE */
+@media (max-width: 768px) {
+  .playground-modal .modal-content {
+    /* Spazio per non coprire contenuti con le frecce */
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+
+  .playground-modal .modal-nav {
+    position: fixed;               /* stacca le frecce dal layout */
+    left: 50%;                     /* centratura orizzontale */
+    transform: translateX(-50%);
+    right: auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;                /* sopra al contenuto del modal */
+    font-size: 0;                  /* nasconde il testo ←/→ interno */
+  }
+
+  .playground-modal .modal-nav-prev {
+    top: 8px;                      /* freccia in alto */
+    bottom: auto;
+  }
+
+  .playground-modal .modal-nav-next {
+    bottom: 8px;                   /* freccia in basso */
+    top: auto;
+  }
+
+  /* Icone freccia: su/giù al posto di sinistra/destra */
+  .playground-modal .modal-nav-prev::after {
+    content: '↑';
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .playground-modal .modal-nav-next::after {
+    content: '↓';
+    font-size: 20px;
+    line-height: 1;
+  }
+}
