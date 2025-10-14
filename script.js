@@ -277,13 +277,30 @@ document.addEventListener('DOMContentLoaded', function() {
             galleryItem.className = 'modal-gallery-item';
             
             // Check if it's a video file
-            if (media.toLowerCase().includes('.mp4') || media.toLowerCase().includes('.mov') || media.toLowerCase().includes('.webm')) {
+                        if (media.toLowerCase().includes('.mp4') || media.toLowerCase().includes('.mov') || media.toLowerCase().includes('.webm')) {
                 const video = document.createElement('video');
                 video.src = media;
                 video.autoplay = true;
                 video.muted = true;
                 video.loop = true;
                 video.playsInline = true;
+
+                // Attributi per compatibilità iOS
+                video.setAttribute('autoplay', '');
+                video.setAttribute('muted', '');
+                video.setAttribute('loop', '');
+                video.setAttribute('playsinline', '');
+                video.setAttribute('webkit-playsinline', '');
+
+                // Prova a partire appena pronto
+                video.addEventListener('canplay', () => {
+                    const p = video.play();
+                    if (p && typeof p.then === 'function') {
+                        p.catch(() => { /* su iOS si sblocca al tocco (vedi sotto) */ });
+                    }
+                });
+                video.load();
+
                 video.style.width = '100%';
                 video.style.height = '100%';
                 video.style.objectFit = 'cover';
@@ -314,6 +331,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const isAtBottom = modalRight.scrollTop + modalRight.clientHeight >= modalRight.scrollHeight - 10;
             if (isAtBottom) {
                 scrollIndicator.style.opacity = '0';
+                 // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Avvia i video nel modal (utile per Android, e iOS dopo un gesto)
+            setTimeout(() => {
+                document.querySelectorAll('#modalGallery video').forEach(v => {
+                    const p = v.play();
+                    if (p && typeof p.then === 'function') {
+                        p.catch(() => { /* iOS potrebbe richiedere un gesto: verrà sbloccato sotto */ });
+                    }
+                });
+            }, 0);
             } else {
                 scrollIndicator.style.opacity = '1';
             }
@@ -424,6 +454,23 @@ document.addEventListener('DOMContentLoaded', function() {
     galleryItems.forEach((item, index) => {
         item.classList.add('fade-in');
         item.style.transitionDelay = `${index * 0.2}s`;
+        Sblocco autoplay mobile al primo gesto utente
+    let mobileAutoplayUnlocked = false;
+    const unlockAutoplay = () => {
+        if (mobileAutoplayUnlocked) return;
+        mobileAutoplayUnlocked = true;
+        document.querySelectorAll('video[autoplay], #modalGallery video').forEach(v => {
+            try {
+                v.muted = true;
+                const p = v.play();
+                if (p && typeof p.then === 'function') { p.catch(() => {}); }
+            } catch (e) {}
+        });
+        document.removeEventListener('touchstart', unlockAutoplay);
+        document.removeEventListener('click', unlockAutoplay);
+    };
+    document.addEventListener('touchstart', unlockAutoplay, { passive: true });
+    document.addEventListener('click', unlockAutoplay, { passive: true });
     });
     
     // Enhanced navbar background on scroll with smooth transitions
