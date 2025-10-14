@@ -4109,3 +4109,57 @@ button:focus-visible {
     cursor: auto !important;
   }
 }
+
+/* ===== DESKTOP (override globale) ===== */
+.section-title {
+  font-size: 28px;           /* alza finché ti piace */
+  line-height: 1.25;
+}
+
+.project-name {
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.project-tags {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.project-title {
+  font-size: 64px;
+  line-height: 1.1;
+}
+
+.project-subtitle {
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+/* ===== MOBILE (<=768px) ===== */
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .project-name {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .project-tags {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .project-title {
+    font-size: 36px;
+    line-height: 1.15;
+  }
+
+  .project-subtitle {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+}
