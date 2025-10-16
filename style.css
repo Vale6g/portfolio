@@ -822,6 +822,15 @@ body {
     z-index: 1000;
 }
 
+/* Disabilita preview su dispositivi touch/mobile */
+@media (hover: none), (pointer: coarse) {
+    .project-preview { display: none !important; }
+}
+
+@media (max-width: 768px) {
+    .project-preview { display: none !important; }
+}
+
 .project-preview.active {
     opacity: 1;
     visibility: visible;
@@ -1863,20 +1872,20 @@ html {
     .modal-content {
         flex-direction: column;
         width: 95%;
-        max-height: 90vh;
+        max-height: 85vh;
     }
     
     .modal-left {
-        padding: 40px 30px;
+        padding: 16px 16px;
     }
     
     .modal-right {
         flex: 1;
-        max-height: 300px;
+        max-height: 60vh;
     }
     
     .modal-gallery-item {
-        height: 250px;
+        height: 260px;
     }
     
     .modal-title {
@@ -1890,6 +1899,18 @@ html {
     .modal-close {
         top: -40px;
         right: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        max-height: 80vh;
+    }
+    .modal-right {
+        max-height: 58vh;
+    }
+    .modal-gallery-item {
+        height: 240px;
     }
 }
 
@@ -4159,9 +4180,9 @@ button:focus-visible {
 /* Frecce verticali nel modal del playground - MOBILE */
 @media (max-width: 768px) {
   .playground-modal .modal-content {
-    /* Spazio per non coprire contenuti con le frecce */
-    padding-top: 56px;
-    padding-bottom: 56px;
+    /* Rimosso spazio extra per eliminare bordo bianco sopra/sotto */
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .playground-modal .modal-nav {
