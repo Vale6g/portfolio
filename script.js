@@ -82,28 +82,43 @@ class CustomCursor {
 function initScrollAnimations() {
     // Modern scroll animations with Intersection Observer
     const animationElements = document.querySelectorAll('.fade-in, .fade-in-left, .fade-in-right, .fade-in-scale');
-    
+
     const animationOptions = {
-        threshold: 0.15,
-        rootMargin: '0px 0px -80px 0px'
+        threshold: [0, 0.1, 0.25, 0.5],
+        rootMargin: '120px 0px -60px 0px'
     };
-    
+
     const animationObserver = new IntersectionObserver(function(entries, observer) {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                // Add appear class with a small delay for staggered effect
+            if (entry.intersectionRatio >= 0.1) {
+                const el = entry.target;
+                // Support custom per-element delay via data-anim-delay (e.g., "120ms" or number)
+                let delay = 50;
+                const attr = el.getAttribute('data-anim-delay');
+                if (attr) {
+                    const parsed = parseInt(attr, 10);
+                    delay = isNaN(parsed) ? delay : parsed;
+                }
                 setTimeout(() => {
-                    entry.target.classList.add('appear');
-                }, 50);
-                
-                // Unobserve after animation to improve performance
-                observer.unobserve(entry.target);
+                    el.classList.add('appear');
+                }, delay);
+                observer.unobserve(el);
             }
         });
     }, animationOptions);
-    
-    // Observe all animation elements
-    animationElements.forEach(element => {
+
+    // Reduce motion users: show immediately
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    animationElements.forEach((element, i) => {
+        if (prefersReduced) {
+            element.classList.add('appear');
+            return;
+        }
+        // Optional stagger via inline style if not provided
+        if (!element.getAttribute('data-anim-delay')) {
+            element.setAttribute('data-anim-delay', String(80 + (i % 6) * 40));
+        }
         animationObserver.observe(element);
     });
 }
@@ -187,6 +202,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // First-load intro
     initFirstLoadIntro();
+
+    // Media performance optimizations
+    optimizeMediaLoading();
     
     // Performance optimization: Throttle scroll events
     let scrollTimeout;
@@ -580,6 +598,10 @@ function initFirstLoadIntro() {
 
 // Project Preview functionality
 function initProjectPreview() {
+    // Skip entirely on mobile/touch devices
+    const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    if (isTouch) return;
+
     const projectItems = document.querySelectorAll('.project-item[data-preview]');
     const preview = document.getElementById('projectPreview');
     const previewImage = document.getElementById('previewImage');
@@ -727,6 +749,108 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Initialize custom cursor
 new CustomCursor();
+
+// Lazy-load images and defer video loading for performance
+function optimizeMediaLoading() {
+    // Images: add lazy loading and async decoding by default
+    const allImages = Array.from(document.querySelectorAll('img'));
+    if (allImages.length > 0) {
+        // Heuristics: keep the first above-the-fold image eager
+        const firstImage = allImages[0];
+        allImages.forEach((img) => {
+            if (img.hasAttribute('data-eager') || img === firstImage) {
+                img.loading = 'eager';
+                img.decoding = 'async';
+                img.fetchPriority = 'high';
+            } else {
+                img.loading = 'lazy';
+                img.decoding = 'async';
+            }
+            // Prevent layout shifts where possible
+            if (!img.width || !img.height) {
+                img.style.containIntrinsicSize = '1000px auto';
+            }
+        });
+    }
+
+    // Videos: defer loading/decoding until in viewport (exclude background hero video)
+    const videos = Array.from(document.querySelectorAll('video')).filter(v => v.id !== 'bgVideo');
+    if (videos.length === 0) return;
+
+    const ensureAttributes = (video) => {
+        if (!video.hasAttribute('playsinline')) video.setAttribute('playsinline', '');
+        if (!video.hasAttribute('muted') && video.autoplay) video.muted = true;
+        video.preload = 'none';
+    };
+
+    const stashSources = (video) => {
+        // If already prepared, skip
+        if (video.dataset.prepared === '1') return;
+        // Direct src
+        if (video.src) {
+            video.dataset.src = video.src;
+            video.removeAttribute('src');
+        }
+        // <source> children
+        video.querySelectorAll('source[src]').forEach((source) => {
+            source.dataset.src = source.getAttribute('src');
+            source.removeAttribute('src');
+        });
+        video.dataset.prepared = '1';
+    };
+
+    const restoreSourcesAndLoad = (video) => {
+        if (video.dataset.loaded === '1') return;
+        if (video.dataset.src) {
+            video.src = video.dataset.src;
+        }
+        video.querySelectorAll('source').forEach((source) => {
+            if (source.dataset.src) {
+                source.setAttribute('src', source.dataset.src);
+            }
+        });
+        // Trigger load
+        try { video.load(); } catch (e) {}
+        // Autoplay muted loops will start if allowed
+        if (video.autoplay || video.hasAttribute('autoplay')) {
+            const p = video.play();
+            if (p && typeof p.then === 'function') p.catch(() => {});
+        }
+        video.dataset.loaded = '1';
+    };
+
+    const isInViewport = (el) => {
+        const rect = el.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+    };
+
+    // Prepare videos that are not initially in view
+    videos.forEach((video) => {
+        ensureAttributes(video);
+        if (!isInViewport(video)) {
+            stashSources(video);
+        }
+    });
+
+    const videoObserver = new IntersectionObserver((entries, obs) => {
+        entries.forEach((entry) => {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+                restoreSourcesAndLoad(video);
+                obs.unobserve(video);
+            }
+        });
+    }, { rootMargin: '200px 0px', threshold: 0.1 });
+
+    videos.forEach((video) => {
+        // If already visible, load now; else observe
+        if (isInViewport(video)) {
+            restoreSourcesAndLoad(video);
+        } else {
+            videoObserver.observe(video);
+        }
+    });
+}
 
 
 
