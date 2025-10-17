@@ -36,6 +36,111 @@ body {
     mix-blend-mode: multiply;
 }
 
+/* ======= INDEX: OVERLAY ANTEPRIME PROGETTI ======= */
+.previews-overlay {
+    position: relative; /* in flusso: si raggiunge scorrendo verso il basso */
+    width: 100%;
+    z-index: 4;
+}
+
+.previews-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr); /* meno elementi per riga */
+    gap: 40px; /* ancora più respiro */
+    padding: 14vh 10px 26vh; /* più aria sopra e sotto */
+    max-width: 1100px; /* ridotta per diminuire dimensione anteprime */
+    margin: 0 auto;
+    justify-content: center; /* centra le colonne dentro il contenitore */
+}
+
+.preview-item {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5; /* anteprima tipo schermo 4:5 */
+    border-radius: 0;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.preview-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+}
+
+/* Overlay titolo/tags su desktop */
+.preview-meta {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);
+    color: #fff;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.preview-title { display: block; font-size: 1rem; font-weight: 600; }
+.preview-tags { display: block; font-size: 0.8rem; opacity: 0.9; }
+
+@media (hover: hover) and (pointer: fine) {
+  .preview-item:hover .preview-meta { opacity: 1; transform: translateY(0); }
+  .preview-item:hover { transform: translateY(-6px); }
+}
+
+/* Dimensioni base */
+/* Orizzontali e verticali: spanning colonnare (ratio gestito dal contenitore 4:5) */
+
+/* Spanning per combinazioni dimensione/orientamento */
+/* Riduzione dimensioni: diminuiamo gli span */
+.preview-item.small.vert { grid-column: span 2; }
+.preview-item.small.horiz { grid-column: span 3; }
+.preview-item.medium.vert { grid-column: span 3; }
+.preview-item.medium.horiz { grid-column: span 4; }
+.preview-item.large.vert { grid-column: span 4; }
+.preview-item.large.horiz { grid-column: span 5; }
+
+/* Layout ordinato senza forzare colonne: lasciamo al flusso della griglia */
+
+/* Assicurare che nome e tag restino visibili sopra alle immagini */
+.navbar { z-index: 100; }
+.tags-scroll-container { z-index: 101; }
+.hero-title { position: relative; z-index: 102; }
+
+/* Mobile */
+@media (max-width: 1024px) {
+  .previews-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 24px;
+    padding: 10vh 10px 16vh;
+  }
+  .preview-item.small { grid-column: span 2; }
+  .preview-item.medium { grid-column: span 3; }
+  .preview-item.large { grid-column: span 4; }
+  /* Reset offset su tablet per mantenere leggibilità */
+  .previews-grid .preview-item { margin-top: 0; }
+}
+
+@media (max-width: 600px) {
+  .previews-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    padding: 8vh 10px 12vh;
+  }
+  .preview-item.small { grid-column: span 4; }
+  .preview-item.medium { grid-column: span 4; }
+  .preview-item.large { grid-column: span 4; }
+  .previews-grid .preview-item { margin-top: 0; }
+}
+
 #bgVideo {
     position: fixed;
     top: 0;
@@ -45,6 +150,7 @@ body {
     object-fit: cover; /* mantiene proporzioni e riempie lo schermo */
     z-index: -1;       /* sotto tutti i contenuti */
     pointer-events: none; /* evita che interferisca con click */
+    transition: opacity 0.6s ease;
   }
 
 
