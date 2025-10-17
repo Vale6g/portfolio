@@ -205,6 +205,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Media performance optimizations
     optimizeMediaLoading();
+
+    // Fade background video when previews enter viewport
+    initBackgroundVideoFade();
+
+    // Carosello anteprime disattivato su richiesta
     
     // Performance optimization: Throttle scroll events
     let scrollTimeout;
@@ -689,6 +694,51 @@ function initParallaxEffect() {
     
     window.addEventListener('scroll', requestTick);
 }
+
+// Fade out/in the background video based on scroll position relative to previews
+function initBackgroundVideoFade() {
+    const bgVideo = document.getElementById('bgVideo');
+    const previewsSection = document.querySelector('.previews-overlay');
+    if (!bgVideo || !previewsSection) return;
+
+    let lastOpacity = 1;
+
+    const updateOpacity = () => {
+        const rect = previewsSection.getBoundingClientRect();
+        const viewportH = window.innerHeight || document.documentElement.clientHeight;
+
+        // When top of previews approaches the top of viewport, start fading
+        // Map distance of rect.top from viewport height to 1->0
+        const start = viewportH * 0.6; // start fading when section is ~60% below top
+        const end = 0;                  // fully faded when section reaches top
+        const t = Math.min(1, Math.max(0, 1 - (rect.top / start)));
+        const targetOpacity = 1 - t; // 1 -> 0
+
+        if (Math.abs(targetOpacity - lastOpacity) > 0.02) {
+            bgVideo.style.opacity = String(targetOpacity);
+            lastOpacity = targetOpacity;
+        }
+    };
+
+    // Throttle with rAF
+    let ticking = false;
+    const onScroll = () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                updateOpacity();
+                ticking = false;
+            });
+            ticking = true;
+        }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    // Initial set
+    updateOpacity();
+}
+
+// Carosello rimosso
 
 
 // Image Carousel for Process Section
